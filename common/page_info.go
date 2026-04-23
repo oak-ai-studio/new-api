@@ -9,6 +9,7 @@ import (
 type PageInfo struct {
 	Page     int `json:"page"`      // page num 页码
 	PageSize int `json:"page_size"` // page size 页大小
+	Size     int `json:"size"`      // page size alias for compatibility
 
 	Total int `json:"total"` // 总条数，后设置
 	Items any `json:"items"` // 数据，后设置
@@ -44,8 +45,18 @@ func GetPageQuery(c *gin.Context) *PageInfo {
 	if page, err := strconv.Atoi(c.Query("p")); err == nil {
 		pageInfo.Page = page
 	}
+	if pageInfo.Page == 0 {
+		if page, err := strconv.Atoi(c.Query("page")); err == nil {
+			pageInfo.Page = page
+		}
+	}
 	if pageSize, err := strconv.Atoi(c.Query("page_size")); err == nil {
 		pageInfo.PageSize = pageSize
+	}
+	if pageInfo.PageSize == 0 {
+		if pageSize, err := strconv.Atoi(c.Query("limit")); err == nil {
+			pageInfo.PageSize = pageSize
+		}
 	}
 	if pageInfo.Page < 1 {
 		// 兼容
@@ -77,6 +88,7 @@ func GetPageQuery(c *gin.Context) *PageInfo {
 	if pageInfo.PageSize > 100 {
 		pageInfo.PageSize = 100
 	}
+	pageInfo.Size = pageInfo.PageSize
 
 	return pageInfo
 }
