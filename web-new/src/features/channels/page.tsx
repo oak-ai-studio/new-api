@@ -4,6 +4,7 @@ import { useState } from "react"
 import { useQuery, useQueryClient } from "@tanstack/react-query"
 
 import { Button } from "@/components/ui/button"
+import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import {
@@ -16,6 +17,8 @@ import {
 } from "@/components/ui/table"
 
 import { deleteChannel, listChannels, setChannelStatus } from "./api"
+import { AddChannelDialog } from "./add-channel-dialog"
+import { getChannelTypeMeta } from "./channel-types"
 
 export function ChannelsPage() {
   const [page, setPage] = useState(1)
@@ -37,7 +40,14 @@ export function ChannelsPage() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>渠道配置（AI Gateway）</CardTitle>
+        <div className="flex items-center justify-between gap-3">
+          <CardTitle>渠道配置（AI Gateway）</CardTitle>
+          <AddChannelDialog
+            onCreated={async () => {
+              await qc.invalidateQueries({ queryKey: ["channels"] })
+            }}
+          />
+        </div>
       </CardHeader>
       <CardContent className="space-y-3">
         <Input
@@ -76,7 +86,11 @@ export function ChannelsPage() {
                 <TableRow key={ch.id}>
                   <TableCell>{ch.id}</TableCell>
                   <TableCell>{ch.name}</TableCell>
-                  <TableCell>{ch.type}</TableCell>
+                  <TableCell>
+                    <Badge variant="secondary" className={getChannelTypeMeta(ch.type).className}>
+                      {getChannelTypeMeta(ch.type).label}
+                    </Badge>
+                  </TableCell>
                   <TableCell>{ch.status === 1 ? "启用" : "禁用"}</TableCell>
                   <TableCell>{ch.group}</TableCell>
                   <TableCell className="space-x-2">
