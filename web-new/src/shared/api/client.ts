@@ -7,7 +7,10 @@ type ApiEnvelope<T> = {
 }
 
 export const api = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_SERVER_URL || "",
+  // Keep dev mode same-origin (proxied by Next rewrites),
+  // which avoids browser CORS preflight failures in local setup.
+  baseURL: process.env.NODE_ENV === "development" ? "" : process.env.NEXT_PUBLIC_SERVER_URL || "",
+  withCredentials: true,
 })
 
 api.interceptors.request.use((config) => {
@@ -18,11 +21,14 @@ api.interceptors.request.use((config) => {
   if (!raw) return config
   try {
     const user = JSON.parse(raw)
-    if (user?.token) {
-      config.headers.Authorization = `Bearer ${user.token}`
-    }
+    // New-API-User is required by backend auth flow for console APIs.
     if (user?.id) {
       config.headers["New-API-User"] = user.id
+    }
+    // Only send Authorization when user id is also present, to avoid
+    // "missing New-Api-User" errors in stale localStorage states.
+    if (user?.token && user?.id) {
+      config.headers.Authorization = `Bearer ${user.token}`
     }
   } catch {
     // ignore parse error

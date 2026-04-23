@@ -11,11 +11,11 @@ export type Channel = {
 }
 
 export async function listChannels(page: number, pageSize: number) {
-  return unwrap<Paged<Channel>>(api.get(`/api/channel/?p=${page}&page_size=${pageSize}`))
+  return unwrap<Paged<Channel>>(api.get(`/api/channel?p=${page}&page_size=${pageSize}`))
 }
 
 export async function setChannelStatus(id: number, status: number) {
-  return unwrap(api.put("/api/channel/", { id, status }))
+  return unwrap(api.put("/api/channel", { id, status }))
 }
 
 export async function deleteChannel(id: number) {

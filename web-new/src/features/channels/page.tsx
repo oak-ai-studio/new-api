@@ -28,9 +28,11 @@ export function ChannelsPage() {
     queryFn: () => listChannels(page, pageSize),
   })
 
-  const items = (query.data?.items || []).filter((x) =>
-    keyword ? x.name.toLowerCase().includes(keyword.toLowerCase()) : true,
-  )
+  const items = (query.data?.items || []).filter((x) => {
+    const name = x.name || ""
+    return keyword ? name.toLowerCase().includes(keyword.toLowerCase()) : true
+  })
+  const errorMessage = query.error instanceof Error ? query.error.message : ""
 
   return (
     <Card>
@@ -56,6 +58,20 @@ export function ChannelsPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
+              {query.isLoading && (
+                <TableRow>
+                  <TableCell colSpan={6} className="text-center text-slate-500">
+                    加载中...
+                  </TableCell>
+                </TableRow>
+              )}
+              {errorMessage && !query.isLoading && (
+                <TableRow>
+                  <TableCell colSpan={6} className="text-center text-red-600">
+                    {errorMessage}
+                  </TableCell>
+                </TableRow>
+              )}
               {items.map((ch) => (
                 <TableRow key={ch.id}>
                   <TableCell>{ch.id}</TableCell>
@@ -85,6 +101,13 @@ export function ChannelsPage() {
                   </TableCell>
                 </TableRow>
               ))}
+              {!query.isLoading && !errorMessage && items.length === 0 && (
+                <TableRow>
+                  <TableCell colSpan={6} className="text-center text-slate-500">
+                    暂无渠道数据
+                  </TableCell>
+                </TableRow>
+              )}
             </TableBody>
           </Table>
         </div>

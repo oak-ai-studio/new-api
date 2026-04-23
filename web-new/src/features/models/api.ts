@@ -10,9 +10,9 @@ export type ModelMeta = {
 }
 
 export async function listModels(page: number, pageSize: number) {
-  return unwrap<Paged<ModelMeta>>(api.get(`/api/models/?p=${page}&page_size=${pageSize}`))
+  return unwrap<Paged<ModelMeta>>(api.get(`/api/models?p=${page}&page_size=${pageSize}`))
 }
 
 export async function setModelStatus(id: number, status: number) {
-  return unwrap(api.put("/api/models/?status_only=true", { id, status }))
+  return unwrap(api.put("/api/models?status_only=true", { id, status }))
 }

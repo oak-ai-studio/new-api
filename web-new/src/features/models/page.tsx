@@ -15,6 +15,16 @@ import {
 } from "@/components/ui/table"
 
 import { listModels, setModelStatus } from "./api"
+import { getPricing } from "../pricing/api"
+
+type DisplayModel = {
+  id: number
+  model_name: string
+  vendor_id?: number
+  quota_type?: number
+  status?: number
+  readOnly: boolean
+}
 
 export function ModelsPage() {
   const [page, setPage] = useState(1)
@@ -24,6 +34,26 @@ export function ModelsPage() {
     queryKey: ["models", page],
     queryFn: () => listModels(page, pageSize),
   })
+  const errorMessage = query.error instanceof Error ? query.error.message : ""
+  const fallbackPricingQuery = useQuery({
+    queryKey: ["models-fallback-pricing"],
+    queryFn: getPricing,
+    enabled: !query.isLoading && !errorMessage && (query.data?.items?.length || 0) === 0,
+  })
+
+  const primaryItems = query.data?.items || []
+  const fallbackItems: DisplayModel[] = (fallbackPricingQuery.data?.items || []).map((item, index) => ({
+    id: -(index + 1),
+    model_name: item.model_name,
+    vendor_id: item.vendor_id,
+    quota_type: item.quota_type,
+    status: undefined,
+    readOnly: true,
+  }))
+  const displayItems: DisplayModel[] =
+    primaryItems.length > 0
+      ? primaryItems.map((item) => ({ ...item, readOnly: false }))
+      : fallbackItems.slice((page - 1) * pageSize, page * pageSize)
 
   return (
     <Card>
@@ -44,26 +74,53 @@ export function ModelsPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {(query.data?.items || []).map((m) => (
+              {query.isLoading && (
+                <TableRow>
+                  <TableCell colSpan={6} className="text-center text-slate-500">
+                    加载中...
+                  </TableCell>
+                </TableRow>
+              )}
+              {errorMessage && !query.isLoading && (
+                <TableRow>
+                  <TableCell colSpan={6} className="text-center text-red-600">
+                    {errorMessage}
+                  </TableCell>
+                </TableRow>
+              )}
+              {displayItems.map((m) => (
                 <TableRow key={m.id}>
-                  <TableCell>{m.id}</TableCell>
+                  <TableCell>{m.id > 0 ? m.id : "-"}</TableCell>
                   <TableCell>{m.model_name}</TableCell>
                   <TableCell>{m.vendor_id ?? "-"}</TableCell>
                   <TableCell>{m.quota_type ?? "-"}</TableCell>
-                  <TableCell>{m.status === 1 ? "启用" : "禁用"}</TableCell>
                   <TableCell>
-                    <Button
-                      variant="outline"
-                      onClick={async () => {
-                        await setModelStatus(m.id, m.status === 1 ? 0 : 1)
-                        await qc.invalidateQueries({ queryKey: ["models"] })
-                      }}
-                    >
-                      {m.status === 1 ? "禁用" : "启用"}
-                    </Button>
+                    {m.readOnly ? "-" : m.status === 1 ? "启用" : "禁用"}
+                  </TableCell>
+                  <TableCell>
+                    {m.readOnly ? (
+                      <span className="text-xs text-slate-500">只读（来自定价）</span>
+                    ) : (
+                      <Button
+                        variant="outline"
+                        onClick={async () => {
+                          await setModelStatus(m.id, m.status === 1 ? 0 : 1)
+                          await qc.invalidateQueries({ queryKey: ["models"] })
+                        }}
+                      >
+                        {m.status === 1 ? "禁用" : "启用"}
+                      </Button>
+                    )}
                   </TableCell>
                 </TableRow>
               ))}
+              {!query.isLoading && !errorMessage && displayItems.length === 0 && (
+                <TableRow>
+                  <TableCell colSpan={6} className="text-center text-slate-500">
+                    暂无模型数据
+                  </TableCell>
+                </TableRow>
+              )}
             </TableBody>
           </Table>
         </div>
@@ -73,7 +130,7 @@ export function ModelsPage() {
           </Button>
           <Button
             variant="outline"
-            disabled={(query.data?.items?.length || 0) < pageSize}
+            disabled={displayItems.length < pageSize}
             onClick={() => setPage((p) => p + 1)}
           >
             下一页
