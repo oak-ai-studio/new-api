@@ -116,16 +116,18 @@ export function RegisterPage() {
         </Link>
 
         <div className="mx-auto flex w-full max-w-sm flex-1 items-center py-6">
-          <form className="w-full space-y-4" onSubmit={onSubmit}>
-            <div className="space-y-1 text-center">
-              <h1 className="text-3xl leading-tight font-bold">创建账号</h1>
+          <form className="w-full space-y-6" onSubmit={onSubmit}>
+            <div className="space-y-2 text-center">
+              <h1 className="text-2xl leading-tight font-bold">创建账号</h1>
               <p className="text-sm text-muted-foreground">填写以下信息完成注册</p>
             </div>
 
-            <div className="space-y-2">
-              <label htmlFor="username" className="text-sm font-medium text-foreground">
-                用户名
-              </label>
+            <div className="space-y-2.5">
+              <div className="flex h-5 items-center">
+                <label htmlFor="username" className="text-sm leading-5 font-medium text-foreground">
+                  用户名
+                </label>
+              </div>
               <Input
                 id="username"
                 className="h-11 bg-background"
@@ -137,10 +139,12 @@ export function RegisterPage() {
 
             {needEmailVerification && (
               <>
-                <div className="space-y-2">
-                  <label htmlFor="email" className="text-sm font-medium text-foreground">
-                    邮箱
-                  </label>
+                <div className="space-y-2.5">
+                  <div className="flex h-5 items-center">
+                    <label htmlFor="email" className="text-sm leading-5 font-medium text-foreground">
+                      邮箱
+                    </label>
+                  </div>
                   <div className="flex gap-2">
                     <Input
                       id="email"
@@ -160,10 +164,12 @@ export function RegisterPage() {
                     </Button>
                   </div>
                 </div>
-                <div className="space-y-2">
-                  <label htmlFor="verification" className="text-sm font-medium text-foreground">
-                    邮箱验证码
-                  </label>
+                <div className="space-y-2.5">
+                  <div className="flex h-5 items-center">
+                    <label htmlFor="verification" className="text-sm leading-5 font-medium text-foreground">
+                      邮箱验证码
+                    </label>
+                  </div>
                   <Input
                     id="verification"
                     className="h-11 bg-background"
@@ -175,10 +181,12 @@ export function RegisterPage() {
               </>
             )}
 
-            <div className="space-y-2">
-              <label htmlFor="password" className="text-sm font-medium text-foreground">
-                密码
-              </label>
+            <div className="space-y-2.5">
+              <div className="flex h-5 items-center">
+                <label htmlFor="password" className="text-sm leading-5 font-medium text-foreground">
+                  密码
+                </label>
+              </div>
               <Input
                 id="password"
                 className="h-11 bg-background"
@@ -190,10 +198,12 @@ export function RegisterPage() {
               <p className="text-xs text-muted-foreground">密码长度至少 8 位。</p>
             </div>
 
-            <div className="space-y-2">
-              <label htmlFor="password2" className="text-sm font-medium text-foreground">
-                确认密码
-              </label>
+            <div className="space-y-2.5">
+              <div className="flex h-5 items-center">
+                <label htmlFor="password2" className="text-sm leading-5 font-medium text-foreground">
+                  确认密码
+                </label>
+              </div>
               <Input
                 id="password2"
                 className="h-11 bg-background"

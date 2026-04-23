@@ -95,7 +95,8 @@ export function ConsoleLayout() {
     .filter((group) => group.items.length > 0)
   const isMobile = useIsMobile()
   const displayName = user?.username || "shadcn"
-  const displayEmail = `${displayName}@example.com`
+  const displayBalance =
+    typeof user?.quota === "number" ? `账户余额 ${user.quota.toLocaleString()}` : "账户余额 --"
 
   const handleLogout = async () => {
     try {
@@ -161,7 +162,7 @@ export function ConsoleLayout() {
                     </Avatar>
                     <div className="grid flex-1 text-left text-sm leading-tight">
                       <span className="truncate font-medium">{displayName}</span>
-                      <span className="truncate text-xs">{displayEmail}</span>
+                      <span className="truncate text-xs">{displayBalance}</span>
                     </div>
                     <ChevronsUpDownIcon className="ml-auto size-4" />
                   </SidebarMenuButton>
@@ -180,7 +181,7 @@ export function ConsoleLayout() {
                       </Avatar>
                       <div className="grid flex-1 text-left text-sm leading-tight">
                         <span className="truncate font-medium">{displayName}</span>
-                        <span className="truncate text-xs">{displayEmail}</span>
+                        <span className="truncate text-xs">{displayBalance}</span>
                       </div>
                     </div>
                   </DropdownMenuLabel>

@@ -57,17 +57,19 @@ export function LoginPage() {
           New API
         </Link>
 
-        <div className="mx-auto flex w-full max-w-xs flex-1 items-center">
-          <form className="w-full space-y-5" onSubmit={onSubmit}>
-            <div className="space-y-1 text-center">
-              <h1 className="text-4xl leading-tight font-bold">登录账号</h1>
+        <div className="mx-auto flex w-full max-w-sm flex-1 items-center">
+          <form className="w-full space-y-6" onSubmit={onSubmit}>
+            <div className="space-y-2 text-center">
+              <h1 className="text-2xl leading-tight font-bold">登录账号</h1>
               <p className="text-sm text-muted-foreground">输入用户名和密码继续访问控制台</p>
             </div>
 
-            <div className="space-y-2">
-              <label htmlFor="username" className="text-sm font-medium text-foreground">
-                用户名
-              </label>
+            <div className="space-y-2.5">
+              <div className="flex h-5 items-center">
+                <label htmlFor="username" className="text-sm leading-5 font-medium text-foreground">
+                  用户名
+                </label>
+              </div>
               <Input
                 id="username"
                 className="h-11 bg-background"
@@ -78,12 +80,15 @@ export function LoginPage() {
               />
             </div>
 
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <label htmlFor="password" className="text-sm font-medium text-foreground">
+            <div className="space-y-2.5">
+              <div className="flex h-5 items-center justify-between">
+                <label htmlFor="password" className="text-sm leading-5 font-medium text-foreground">
                   密码
                 </label>
-                <button type="button" className="text-sm text-muted-foreground underline-offset-4 hover:underline">
+                <button
+                  type="button"
+                  className="text-sm leading-5 text-muted-foreground underline-offset-4 hover:underline"
+                >
                   忘记密码？
                 </button>
               </div>

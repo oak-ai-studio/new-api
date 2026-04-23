@@ -4,6 +4,7 @@ export type SessionUser = {
   role: number
   group?: string
   token?: string
+  quota?: number
 }
 
 export function getSessionUser(): SessionUser | null {
