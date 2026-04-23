@@ -7,14 +7,18 @@ import {
   ChevronsUpDownIcon,
   CircleDollarSignIcon,
   CreditCardIcon,
+  LayoutDashboardIcon,
   KeyRoundIcon,
   LayoutListIcon,
   LogOutIcon,
   LogsIcon,
   Settings2Icon,
+  SettingsIcon,
   ShieldCheckIcon,
   SparklesIcon,
   UsersIcon,
+  WalletIcon,
+  type LucideIcon,
 } from "lucide-react"
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
@@ -32,6 +36,7 @@ import {
   SidebarContent,
   SidebarFooter,
   SidebarGroup,
+  SidebarGroupLabel,
   SidebarHeader,
   SidebarInset,
   SidebarMenu,
@@ -44,14 +49,37 @@ import { useIsMobile } from "@/hooks/use-mobile"
 import { api } from "@/shared/api/client"
 import { getSessionUser, isAdmin } from "@/shared/auth/session"
 
-const navItems = [
-  { to: "/console/channels", label: "渠道配置", adminOnly: true, icon: Settings2Icon },
-  { to: "/console/models", label: "模型管理", adminOnly: true, icon: LayoutListIcon },
-  { to: "/console/pricing", label: "定价查看", icon: CircleDollarSignIcon },
-  { to: "/console/tokens", label: "API Key", icon: KeyRoundIcon },
-  { to: "/console/users", label: "用户管理", adminOnly: true, icon: UsersIcon },
-  { to: "/console/permissions", label: "权限管理", adminOnly: true, icon: ShieldCheckIcon },
-  { to: "/console/logs", label: "日志管理", icon: LogsIcon },
+type NavItem = {
+  to: string
+  label: string
+  icon: LucideIcon
+  adminOnly?: boolean
+}
+
+const navGroups: { label: string; items: NavItem[] }[] = [
+  {
+    label: "控制台",
+    items: [
+      { to: "/console/dashboard", label: "仪表盘", icon: LayoutDashboardIcon },
+      { to: "/console/pricing", label: "定价查看", icon: CircleDollarSignIcon },
+      { to: "/console/tokens", label: "API Key", icon: KeyRoundIcon },
+      { to: "/console/logs", label: "日志管理", icon: LogsIcon },
+    ],
+  },
+  {
+    label: "支付",
+    items: [{ to: "/console/wallet", label: "钱包", icon: WalletIcon }],
+  },
+  {
+    label: "系统管理",
+    items: [
+      { to: "/console/channels", label: "渠道配置", adminOnly: true, icon: Settings2Icon },
+      { to: "/console/models", label: "模型管理", adminOnly: true, icon: LayoutListIcon },
+      { to: "/console/users", label: "用户管理", adminOnly: true, icon: UsersIcon },
+      { to: "/console/permissions", label: "权限管理", adminOnly: true, icon: ShieldCheckIcon },
+      { to: "/console/system", label: "系统管理", adminOnly: true, icon: SettingsIcon },
+    ],
+  },
 ]
 
 export function ConsoleLayout() {
@@ -59,7 +87,12 @@ export function ConsoleLayout() {
   const navigate = useNavigate()
   const user = getSessionUser()
   const admin = isAdmin(user)
-  const visibleNavItems = navItems.filter((item) => !item.adminOnly || admin)
+  const visibleNavGroups = navGroups
+    .map((group) => ({
+      ...group,
+      items: group.items.filter((item) => !item.adminOnly || admin),
+    }))
+    .filter((group) => group.items.length > 0)
   const isMobile = useIsMobile()
   const displayName = user?.username || "shadcn"
   const displayEmail = `${displayName}@example.com`
@@ -82,7 +115,7 @@ export function ConsoleLayout() {
           <SidebarMenu>
             <SidebarMenuItem>
               <SidebarMenuButton asChild tooltip="模型控制台">
-                <Link to="/console/pricing">
+                <Link to="/console/dashboard">
                   <BookOpenTextIcon />
                   <span>New API Console</span>
                 </Link>
@@ -91,24 +124,27 @@ export function ConsoleLayout() {
           </SidebarMenu>
         </SidebarHeader>
         <SidebarContent>
-          <SidebarGroup>
-            <SidebarMenu>
-              {visibleNavItems.map((item) => {
-                const active = location.pathname.startsWith(item.to)
-                const Icon = item.icon
-                return (
-                  <SidebarMenuItem key={item.to}>
-                    <SidebarMenuButton asChild tooltip={item.label} isActive={active}>
-                      <Link to={item.to}>
-                        <Icon />
-                        <span>{item.label}</span>
-                      </Link>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                )
-              })}
-            </SidebarMenu>
-          </SidebarGroup>
+          {visibleNavGroups.map((group) => (
+            <SidebarGroup key={group.label}>
+              <SidebarGroupLabel>{group.label}</SidebarGroupLabel>
+              <SidebarMenu>
+                {group.items.map((item) => {
+                  const active = location.pathname.startsWith(item.to)
+                  const Icon = item.icon
+                  return (
+                    <SidebarMenuItem key={item.to}>
+                      <SidebarMenuButton asChild tooltip={item.label} isActive={active}>
+                        <Link to={item.to}>
+                          <Icon />
+                          <span>{item.label}</span>
+                        </Link>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  )
+                })}
+              </SidebarMenu>
+            </SidebarGroup>
+          ))}
         </SidebarContent>
         <SidebarFooter>
           <SidebarMenu>

@@ -3,14 +3,16 @@
 import { Navigate, Route, Routes } from "react-router-dom"
 
 import { ChannelsPage } from "@/features/channels/page"
+import { DashboardPage } from "@/features/dashboard/page"
 import { LogsPage } from "@/features/logs/page"
 import { ModelsPage } from "@/features/models/page"
 import { PermissionsPage } from "@/features/permissions/page"
 import { PricingPage } from "@/features/pricing/page"
+import { SystemPage } from "@/features/system/page"
 import { TokensPage } from "@/features/tokens/page"
 import { UsersPage } from "@/features/users/page"
+import { WalletPage } from "@/features/wallet/page"
 import { AdminRoute, PrivateRoute } from "@/shared/auth/route-guard"
-import { getSessionUser, isAdmin } from "@/shared/auth/session"
 
 import { ConsoleLayout } from "./console-layout"
 import { ForbiddenPage } from "./screens/forbidden-page"
@@ -18,8 +20,7 @@ import { LoginPage } from "./screens/login-page"
 import { RegisterPage } from "./screens/register-page"
 
 function ConsoleIndexRedirect() {
-  const user = getSessionUser()
-  return <Navigate to={isAdmin(user) ? "/console/channels" : "/console/tokens"} replace />
+  return <Navigate to="/console/dashboard" replace />
 }
 
 export function AppRouter() {
@@ -38,6 +39,7 @@ export function AppRouter() {
         }
       >
         <Route index element={<ConsoleIndexRedirect />} />
+        <Route path="dashboard" element={<DashboardPage />} />
         <Route
           path="channels"
           element={
@@ -56,6 +58,7 @@ export function AppRouter() {
         />
         <Route path="pricing" element={<PricingPage />} />
         <Route path="tokens" element={<TokensPage />} />
+        <Route path="wallet" element={<WalletPage />} />
         <Route
           path="users"
           element={
@@ -73,6 +76,14 @@ export function AppRouter() {
           }
         />
         <Route path="logs" element={<LogsPage />} />
+        <Route
+          path="system"
+          element={
+            <AdminRoute>
+              <SystemPage />
+            </AdminRoute>
+          }
+        />
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
