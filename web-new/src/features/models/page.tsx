@@ -1,10 +1,17 @@
 "use client"
 
-import { useMemo, useState } from "react"
-import { useQuery, useQueryClient } from "@tanstack/react-query"
+import { useEffect, useMemo, useState } from "react"
+import { useInfiniteQuery, useQuery, useQueryClient } from "@tanstack/react-query"
+import { EllipsisIcon } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import {
@@ -34,7 +41,6 @@ type DisplayModel = {
 }
 
 export function ModelsPage() {
-  const [page, setPage] = useState(1)
   const [configureOpen, setConfigureOpen] = useState(false)
   const [configureModelName, setConfigureModelName] = useState("")
   const [keyword, setKeyword] = useState("")
@@ -42,17 +48,43 @@ export function ModelsPage() {
   const [quotaFilter, setQuotaFilter] = useState("all")
   const pageSize = 20
   const qc = useQueryClient()
-  const query = useQuery({
-    queryKey: ["models", page],
-    queryFn: () => listModels(page, pageSize),
+  const query = useInfiniteQuery({
+    queryKey: ["models", pageSize],
+    queryFn: ({ pageParam }) => listModels(pageParam, pageSize),
+    initialPageParam: 1,
+    getNextPageParam: (lastPage, allPages) => {
+      const total = Number(lastPage.total || 0)
+      const loaded = allPages.reduce((sum, page) => sum + (page.items?.length || 0), 0)
+      if (loaded >= total) return undefined
+      const currentPage = Number(lastPage.page || allPages.length)
+      return currentPage + 1
+    },
   })
+  const { hasNextPage, isFetchingNextPage, fetchNextPage } = query
   const vendorsQuery = useQuery({
     queryKey: ["model-vendors"],
     queryFn: () => listVendors(1000),
   })
   const errorMessage = query.error instanceof Error ? query.error.message : ""
 
-  const primaryItems = query.data?.items || []
+  useEffect(() => {
+    const onScroll = () => {
+      if (!hasNextPage || isFetchingNextPage) return
+      const scrollBottom = window.innerHeight + window.scrollY
+      const threshold = document.documentElement.scrollHeight - 180
+      if (scrollBottom >= threshold) {
+        fetchNextPage()
+      }
+    }
+    window.addEventListener("scroll", onScroll, { passive: true })
+    onScroll()
+    return () => window.removeEventListener("scroll", onScroll)
+  }, [hasNextPage, isFetchingNextPage, fetchNextPage])
+
+  const primaryItems = useMemo(
+    () => query.data?.pages.flatMap((page) => page.items || []) || [],
+    [query.data?.pages],
+  )
   const displayItems: DisplayModel[] = primaryItems.map((item) => ({ ...item, readOnly: false }))
 
   const vendorMap = useMemo(() => {
@@ -203,7 +235,7 @@ export function ModelsPage() {
                   <TableHead>模型名</TableHead>
                   <TableHead>供应商</TableHead>
                   <TableHead>计费类型</TableHead>
-                  <TableHead>操作</TableHead>
+                  <TableHead className="text-right">操作</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -229,37 +261,44 @@ export function ModelsPage() {
                       {m.vendor_id ? vendorMap.get(String(m.vendor_id))?.name || `#${m.vendor_id}` : "-"}
                     </TableCell>
                     <TableCell>{renderQuotaType(m)}</TableCell>
-                    <TableCell className="space-x-2 whitespace-nowrap">
-                      <Button
-                        variant="outline"
-                        onClick={async () => {
-                          if (m.readOnly || m.status === 1) {
-                            await handleDisable(m)
-                            return
-                          }
-                          await setModelStatus(m.id, 1)
-                          await qc.invalidateQueries({ queryKey: ["models"] })
-                        }}
-                      >
-                        {m.readOnly || m.status === 1 ? "禁用" : "启用"}
-                      </Button>
-                      <Button
-                        variant="outline"
-                        onClick={() => {
-                          setConfigureModelName(m.model_name)
-                          setConfigureOpen(true)
-                        }}
-                      >
-                        配置
-                      </Button>
-                      <Button
-                        variant="destructive"
-                        onClick={async () => {
-                          await handleDelete(m)
-                        }}
-                      >
-                        删除
-                      </Button>
+                    <TableCell className="whitespace-nowrap text-right">
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="icon-sm" aria-label="actions">
+                            <EllipsisIcon className="size-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem
+                            onClick={async () => {
+                              if (m.readOnly || m.status === 1) {
+                                await handleDisable(m)
+                                return
+                              }
+                              await setModelStatus(m.id, 1)
+                              await qc.invalidateQueries({ queryKey: ["models"] })
+                            }}
+                          >
+                            {m.readOnly || m.status === 1 ? "禁用" : "启用"}
+                          </DropdownMenuItem>
+                          <DropdownMenuItem
+                            onClick={() => {
+                              setConfigureModelName(m.model_name)
+                              setConfigureOpen(true)
+                            }}
+                          >
+                            配置
+                          </DropdownMenuItem>
+                          <DropdownMenuItem
+                            className="text-destructive focus:text-destructive"
+                            onClick={async () => {
+                              await handleDelete(m)
+                            }}
+                          >
+                            删除
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
                     </TableCell>
                   </TableRow>
                 ))}
@@ -273,18 +312,9 @@ export function ModelsPage() {
               </TableBody>
             </Table>
           </div>
-          <div className="flex justify-end gap-2">
-            <Button variant="outline" disabled={page <= 1} onClick={() => setPage((p) => p - 1)}>
-              上一页
-            </Button>
-            <Button
-              variant="outline"
-              disabled={displayItems.length < pageSize}
-              onClick={() => setPage((p) => p + 1)}
-            >
-              下一页
-            </Button>
-          </div>
+          {query.isFetchingNextPage && (
+            <div className="text-center text-xs text-muted-foreground">加载更多中...</div>
+          )}
           <AddModelDialog
             hideTrigger
             open={configureOpen}
