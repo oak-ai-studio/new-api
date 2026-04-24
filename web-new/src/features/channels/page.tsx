@@ -91,7 +91,7 @@ export function ChannelsPage() {
               </SelectContent>
             </Select>
           </div>
-          <div className="overflow-auto rounded-md border border-border">
+          <div className="overflow-auto">
             <Table>
               <TableHeader>
                 <TableRow>

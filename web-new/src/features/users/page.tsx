@@ -33,7 +33,7 @@ export function UsersPage() {
       </div>
       <Card className="rounded-xl">
         <CardContent className="space-y-3 pt-5">
-          <div className="overflow-auto rounded-md border border-border">
+          <div className="overflow-auto">
             <Table>
               <TableHeader>
                 <TableRow>

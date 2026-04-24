@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react"
 import { useQuery } from "@tanstack/react-query"
+import { PlusIcon } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import {
@@ -136,7 +137,11 @@ export function AddTokenDialog({ onCreated }: AddTokenDialogProps) {
       }}
     >
       <DialogTrigger asChild>
-        <Button className="h-8" variant="outline">
+        <Button
+          variant="default"
+          className="h-9 border border-transparent bg-zinc-900 text-white hover:bg-zinc-800 dark:bg-white dark:text-zinc-900 dark:hover:bg-zinc-100"
+        >
+          <PlusIcon className="size-4" />
           创建 API Key
         </Button>
       </DialogTrigger>

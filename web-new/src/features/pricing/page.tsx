@@ -65,7 +65,7 @@ export function PricingPage() {
             value={keyword}
             onChange={(e) => setKeyword(e.target.value)}
           />
-          <div className="overflow-auto rounded-md border border-border">
+          <div className="overflow-auto">
             <Table>
               <TableHeader>
                 <TableRow>

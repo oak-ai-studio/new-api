@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react"
 import type { ReactNode } from "react"
+import { PlusIcon } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import {
@@ -127,7 +128,17 @@ export function AddModelDialog({
       }}
     >
       {!hideTrigger ? (
-        <DialogTrigger asChild>{trigger || <Button>添加模型</Button>}</DialogTrigger>
+        <DialogTrigger asChild>
+          {trigger || (
+            <Button
+              variant="default"
+              className="h-9 border border-transparent bg-zinc-900 text-white hover:bg-zinc-800 dark:bg-white dark:text-zinc-900 dark:hover:bg-zinc-100"
+            >
+              <PlusIcon className="size-4" />
+              添加模型
+            </Button>
+          )}
+        </DialogTrigger>
       ) : null}
       <DialogContent className="sm:max-w-2xl">
         <DialogHeader>
