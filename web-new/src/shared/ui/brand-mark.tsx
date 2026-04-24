@@ -1,6 +1,6 @@
 "use client"
 
-import { GalleryVerticalEndIcon } from "lucide-react"
+import { WaypointsIcon } from "lucide-react"
 
 import { cn } from "@/lib/utils"
 
@@ -16,7 +16,7 @@ export function BrandMark({ className, textClassName, iconClassName, tone = "lig
 
   return (
     <div className={cn("flex items-center gap-2.5", className)}>
-      <GalleryVerticalEndIcon
+      <WaypointsIcon
         className={cn(
           "size-7 shrink-0 stroke-[2.5]",
           darkTone ? "text-white" : "text-foreground",

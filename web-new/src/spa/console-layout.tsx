@@ -4,6 +4,7 @@ import { useEffect, useState } from "react"
 import { Link, Outlet, useLocation, useNavigate } from "react-router-dom"
 import {
   BadgeCheckIcon,
+  BellIcon,
   ChevronsUpDownIcon,
   CircleDollarSignIcon,
   CreditCardIcon,
@@ -12,16 +13,20 @@ import {
   LayoutListIcon,
   LogOutIcon,
   LogsIcon,
+  MoonIcon,
   Settings2Icon,
   SettingsIcon,
   ShieldCheckIcon,
   SparklesIcon,
+  SunIcon,
   UsersIcon,
   WalletIcon,
   type LucideIcon,
 } from "lucide-react"
+import { useTheme } from "next-themes"
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -84,6 +89,27 @@ const navGroups: { label: string; items: NavItem[] }[] = [
   },
 ]
 
+const notifications = [
+  {
+    date: "APR 18",
+    tag: "BLOG",
+    title: "Fierce Gateway 上线多模型统一接入能力",
+    summary: "支持统一鉴权、计费与可观测，减少多渠道对接成本。",
+  },
+  {
+    date: "APR 12",
+    tag: "UPDATE",
+    title: "控制台视觉升级",
+    summary: "新增深色模式切换与统一品牌标识，提升操作体验。",
+  },
+  {
+    date: "APR 11",
+    tag: "GUIDE",
+    title: "如何快速配置渠道与模型",
+    summary: "提供从渠道配置到模型上线的标准实践流程。",
+  },
+]
+
 export function ConsoleLayout() {
   const location = useLocation()
   const navigate = useNavigate()
@@ -96,6 +122,8 @@ export function ConsoleLayout() {
     }))
     .filter((group) => group.items.length > 0)
   const isMobile = useIsMobile()
+  const { resolvedTheme, setTheme } = useTheme()
+  const [mounted, setMounted] = useState(false)
   const displayName = user?.username || "shadcn"
   const [quotaStatus, setQuotaStatus] = useState<QuotaDisplayStatus | undefined>(undefined)
   const [liveQuota, setLiveQuota] = useState<number | undefined>(
@@ -105,6 +133,10 @@ export function ConsoleLayout() {
     typeof liveQuota === "number"
       ? `账户余额 ${formatQuotaDisplay(liveQuota, quotaStatus)}`
       : "账户余额 --"
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
 
   useEffect(() => {
     let cancelled = false
@@ -149,6 +181,11 @@ export function ConsoleLayout() {
     }
   }
 
+  const toggleTheme = () => {
+    const next = resolvedTheme === "dark" ? "light" : "dark"
+    setTheme(next)
+  }
+
   return (
     <SidebarProvider defaultOpen>
       <Sidebar variant="inset" collapsible="icon">
@@ -163,11 +200,11 @@ export function ConsoleLayout() {
             </SidebarMenuItem>
           </SidebarMenu>
         </SidebarHeader>
-        <SidebarContent>
+        <SidebarContent className="gap-1.5">
           {visibleNavGroups.map((group) => (
-            <SidebarGroup key={group.label}>
+            <SidebarGroup key={group.label} className="mb-2 last:mb-0">
               <SidebarGroupLabel>{group.label}</SidebarGroupLabel>
-              <SidebarMenu>
+              <SidebarMenu className="gap-1.5">
                 {group.items.map((item) => {
                   const active = location.pathname.startsWith(item.to)
                   const Icon = item.icon
@@ -253,6 +290,53 @@ export function ConsoleLayout() {
       <SidebarInset>
         <header className="flex h-14 items-center border-b border-border bg-background px-4 md:px-6">
           <SidebarTrigger className="-ml-1" />
+          <div className="ml-auto flex items-center gap-1.5">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon-sm" className="relative" aria-label="通知">
+                  <BellIcon className="size-4" />
+                  <span className="absolute top-1.5 right-1.5 size-1.5 rounded-full bg-red-500" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" sideOffset={8} className="w-96 rounded-xl p-0">
+                <div className="flex items-center justify-between border-b border-border px-4 py-3">
+                  <span className="text-sm font-semibold">最新动态</span>
+                  <button type="button" className="text-xs text-muted-foreground hover:text-foreground">
+                    查看全部
+                  </button>
+                </div>
+                <div className="max-h-80 overflow-y-auto">
+                  {notifications.map((item) => (
+                    <button
+                      key={`${item.date}-${item.title}`}
+                      type="button"
+                      className="w-full border-b border-border px-4 py-3 text-left transition-colors hover:bg-muted/60"
+                    >
+                      <div className="mb-2 flex items-center gap-2 text-xs text-muted-foreground">
+                        <span>{item.date}</span>
+                        <span className="rounded-full border border-border px-2 py-0.5 tracking-wide">{item.tag}</span>
+                      </div>
+                      <p className="line-clamp-2 text-sm leading-5 font-medium">{item.title}</p>
+                      <p className="mt-1 line-clamp-2 text-xs text-muted-foreground">{item.summary}</p>
+                    </button>
+                  ))}
+                </div>
+                <button
+                  type="button"
+                  className="w-full px-4 py-3 text-left text-sm text-muted-foreground hover:bg-muted/60 hover:text-foreground"
+                >
+                  查看完整更新日志 →
+                </button>
+              </DropdownMenuContent>
+            </DropdownMenu>
+            <Button variant="ghost" size="icon-sm" onClick={toggleTheme} aria-label="切换深色模式">
+              {mounted && resolvedTheme === "dark" ? (
+                <SunIcon className="size-4" />
+              ) : (
+                <MoonIcon className="size-4" />
+              )}
+            </Button>
+          </div>
         </header>
         <main className="mx-auto min-w-0 w-full max-w-7xl flex-1 px-4 py-6">
           <Outlet />
