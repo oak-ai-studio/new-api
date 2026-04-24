@@ -17,15 +17,16 @@ import {
 } from "@/components/ui/table"
 
 import { getLobeHubIcon } from "@/shared/ui/lobe-icon"
-import { createModel, deleteModel, listModels, searchModels, setModelStatus } from "./api"
-import { getPricing } from "../pricing/api"
+import { createModel, deleteModel, listModels, listVendors, searchModels, setModelStatus } from "./api"
 import { AddModelDialog } from "./add-model-dialog"
 
 type DisplayModel = {
   id: number
   model_name: string
   icon?: string
-  vendor_id?: number
+  vendor_id?: number | string
+  vendor_name?: string
+  vendor_icon?: string
   quota_type?: number
   quota_types?: number[]
   status?: number
@@ -45,34 +46,34 @@ export function ModelsPage() {
     queryKey: ["models", page],
     queryFn: () => listModels(page, pageSize),
   })
-  const errorMessage = query.error instanceof Error ? query.error.message : ""
-  const fallbackPricingQuery = useQuery({
-    queryKey: ["models-fallback-pricing"],
-    queryFn: getPricing,
-    enabled: !query.isLoading && !errorMessage && (query.data?.items?.length || 0) === 0,
+  const vendorsQuery = useQuery({
+    queryKey: ["model-vendors"],
+    queryFn: () => listVendors(1000),
   })
+  const errorMessage = query.error instanceof Error ? query.error.message : ""
 
   const primaryItems = query.data?.items || []
-  const fallbackItems: DisplayModel[] = (fallbackPricingQuery.data?.items || []).map((item, index) => ({
-    id: -(index + 1),
-    model_name: item.model_name,
-    vendor_id: item.vendor_id,
-    quota_type: item.quota_type,
-    status: undefined,
-    readOnly: true,
-  }))
-  const displayItems: DisplayModel[] =
-    primaryItems.length > 0
-      ? primaryItems.map((item) => ({ ...item, readOnly: false }))
-      : fallbackItems.slice((page - 1) * pageSize, page * pageSize)
+  const displayItems: DisplayModel[] = primaryItems.map((item) => ({ ...item, readOnly: false }))
 
   const vendorMap = useMemo(() => {
-    const map = new Map<number, { name: string; icon?: string }>()
-    for (const vendor of fallbackPricingQuery.data?.vendors || []) {
-      map.set(vendor.id, { name: vendor.name, icon: vendor.icon })
+    const map = new Map<string, { name: string; icon?: string }>()
+    for (const vendor of vendorsQuery.data || []) {
+      map.set(String(vendor.id), {
+        name: vendor.name,
+        icon: vendor.icon,
+      })
+    }
+    for (const item of displayItems) {
+      if (!item.vendor_id || map.has(String(item.vendor_id))) {
+        continue
+      }
+      map.set(String(item.vendor_id), {
+        name: item.vendor_name || `#${item.vendor_id}`,
+        icon: item.vendor_icon,
+      })
     }
     return map
-  }, [fallbackPricingQuery.data?.vendors])
+  }, [displayItems, vendorsQuery.data])
 
   const renderQuotaType = (item: DisplayModel) => {
     const firstType = item.quota_type ?? item.quota_types?.[0]
@@ -90,14 +91,15 @@ export function ModelsPage() {
     const keywordMatched = keyword
       ? item.model_name.toLowerCase().includes(keyword.toLowerCase())
       : true
-    const vendorMatched = vendorFilter === "all" ? true : item.vendor_id === Number(vendorFilter)
+    const vendorMatched =
+      vendorFilter === "all" ? true : String(item.vendor_id || "") === String(vendorFilter)
     const quotaType = item.quota_type ?? item.quota_types?.[0]
     const quotaMatched = quotaFilter === "all" ? true : quotaType === Number(quotaFilter)
     return keywordMatched && vendorMatched && quotaMatched
   })
 
   const renderModelIcon = (item: DisplayModel) => {
-    const vendor = item.vendor_id ? vendorMap.get(item.vendor_id) : undefined
+    const vendor = item.vendor_id ? vendorMap.get(String(item.vendor_id)) : undefined
     const iconExpr = item.icon || vendor?.icon || vendor?.name || item.model_name
     return <span className="inline-flex items-center">{getLobeHubIcon(iconExpr, 18)}</span>
   }
@@ -106,6 +108,14 @@ export function ModelsPage() {
     const result = await searchModels(modelName, 1, 50)
     const exact = (result.items || []).find((x) => x.model_name === modelName)
     return exact?.id
+  }
+
+  const normalizeVendorId = (vendorId: DisplayModel["vendor_id"]): number | undefined => {
+    if (vendorId === undefined || vendorId === null || vendorId === "") {
+      return undefined
+    }
+    const parsed = Number(vendorId)
+    return Number.isFinite(parsed) ? parsed : undefined
   }
 
   const handleDisable = async (item: DisplayModel) => {
@@ -118,7 +128,7 @@ export function ModelsPage() {
       await createModel({
         model_name: item.model_name,
         icon: item.icon,
-        vendor_id: item.vendor_id,
+        vendor_id: normalizeVendorId(item.vendor_id),
         status: 0,
         sync_official: 0,
         name_rule: 0,
@@ -216,7 +226,7 @@ export function ModelsPage() {
                     <TableCell>{renderModelIcon(m)}</TableCell>
                     <TableCell>{m.model_name}</TableCell>
                     <TableCell>
-                      {m.vendor_id ? vendorMap.get(m.vendor_id)?.name || `#${m.vendor_id}` : "-"}
+                      {m.vendor_id ? vendorMap.get(String(m.vendor_id))?.name || `#${m.vendor_id}` : "-"}
                     </TableCell>
                     <TableCell>{renderQuotaType(m)}</TableCell>
                     <TableCell className="space-x-2 whitespace-nowrap">

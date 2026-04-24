@@ -6,8 +6,16 @@ export type ModelMeta = {
   model_name: string
   status: number
   icon?: string
-  vendor_id?: number
+  vendor_id?: number | string
+  vendor_name?: string
+  vendor_icon?: string
   quota_type?: number
+}
+
+export type VendorMeta = {
+  id: number
+  name: string
+  icon?: string
 }
 
 export type CreateModelPayload = {
@@ -23,15 +31,15 @@ export type CreateModelPayload = {
 }
 
 export async function listModels(page: number, pageSize: number) {
-  return unwrap<Paged<ModelMeta>>(api.get(`/api/models?p=${page}&page_size=${pageSize}`))
+  return unwrap<Paged<ModelMeta>>(api.get(`/api/models/?p=${page}&page_size=${pageSize}`))
 }
 
 export async function setModelStatus(id: number, status: number) {
-  return unwrap(api.put("/api/models?status_only=true", { id, status }))
+  return unwrap(api.put("/api/models/?status_only=true", { id, status }))
 }
 
 export async function createModel(payload: CreateModelPayload) {
-  return unwrap(api.post("/api/models", payload))
+  return unwrap(api.post("/api/models/", payload))
 }
 
 export async function searchModels(keyword: string, page: number, pageSize: number) {
@@ -43,4 +51,14 @@ export async function searchModels(keyword: string, page: number, pageSize: numb
 
 export async function deleteModel(id: number) {
   return unwrap(api.delete(`/api/models/${id}`))
+}
+
+export async function listVendors(pageSize = 1000) {
+  const data = await unwrap<Paged<VendorMeta> | VendorMeta[]>(
+    api.get(`/api/vendors/?page_size=${pageSize}`)
+  )
+  if (Array.isArray(data)) {
+    return data
+  }
+  return Array.isArray(data.items) ? data.items : []
 }

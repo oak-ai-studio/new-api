@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react"
 import type { ReactNode } from "react"
 import { PlusIcon } from "lucide-react"
+import { useQuery } from "@tanstack/react-query"
 
 import { Button } from "@/components/ui/button"
 import {
@@ -18,7 +19,7 @@ import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Textarea } from "@/components/ui/textarea"
 
-import { createModel } from "./api"
+import { createModel, listVendors } from "./api"
 
 type AddModelDialogProps = {
   onCreated: () => Promise<void> | void
@@ -49,6 +50,10 @@ export function AddModelDialog({
   const [syncOfficial, setSyncOfficial] = useState("1")
   const [submitError, setSubmitError] = useState("")
   const [submitting, setSubmitting] = useState(false)
+  const vendorsQuery = useQuery({
+    queryKey: ["model-vendors"],
+    queryFn: () => listVendors(1000),
+  })
 
   const open = useMemo(
     () => (controlledOpen === undefined ? uncontrolledOpen : controlledOpen),
@@ -197,8 +202,20 @@ export function AddModelDialog({
 
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div className="grid gap-2">
-              <label className="text-sm font-medium">供应商 ID（可选）</label>
-              <Input className="h-9" value={vendorId} onChange={(e) => setVendorId(e.target.value)} placeholder="例如：1" />
+              <label className="text-sm font-medium">供应商（可选）</label>
+              <Select value={vendorId || "none"} onValueChange={(value) => setVendorId(value === "none" ? "" : value)}>
+                <SelectTrigger>
+                  <SelectValue placeholder="请选择供应商" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">不设置供应商</SelectItem>
+                  {(vendorsQuery.data || []).map((vendor) => (
+                    <SelectItem key={vendor.id} value={String(vendor.id)}>
+                      {vendor.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
             <div className="grid gap-2">
               <label className="text-sm font-medium">名称匹配规则</label>
