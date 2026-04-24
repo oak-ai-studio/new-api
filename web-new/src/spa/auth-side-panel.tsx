@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react"
 import { Link } from "react-router-dom"
-import { GalleryVerticalEndIcon } from "lucide-react"
+import { BrandMark } from "@/shared/ui/brand-mark"
 
 const slogans = [
   "统一接入多模型，开发更高效。",
@@ -62,11 +62,8 @@ export function AuthSidePanel() {
 
   return (
     <div className="relative hidden overflow-hidden bg-black text-white md:flex md:flex-col">
-      <Link to="/" className="flex items-center gap-2 px-8 py-6 font-medium text-white md:px-10">
-        <div className="flex size-6 items-center justify-center rounded-md bg-white/15 text-white">
-          <GalleryVerticalEndIcon className="size-4" />
-        </div>
-        New API
+      <Link to="/" className="flex items-center gap-2 px-8 py-6 text-white md:px-10">
+        <BrandMark tone="dark" iconClassName="!size-5" textClassName="font-medium" />
       </Link>
 
       <div className="mt-auto px-8 pb-10 md:px-10">

@@ -4,7 +4,6 @@ import { useEffect, useState } from "react"
 import { Link, Outlet, useLocation, useNavigate } from "react-router-dom"
 import {
   BadgeCheckIcon,
-  BookOpenTextIcon,
   ChevronsUpDownIcon,
   CircleDollarSignIcon,
   CreditCardIcon,
@@ -50,6 +49,7 @@ import { useIsMobile } from "@/hooks/use-mobile"
 import { api } from "@/shared/api/client"
 import { getSessionUser, isAdmin } from "@/shared/auth/session"
 import { formatQuotaDisplay, type QuotaDisplayStatus } from "@/shared/quota-display"
+import { BrandMark } from "@/shared/ui/brand-mark"
 
 type NavItem = {
   to: string
@@ -155,10 +155,9 @@ export function ConsoleLayout() {
         <SidebarHeader>
           <SidebarMenu>
             <SidebarMenuItem>
-              <SidebarMenuButton asChild tooltip="模型控制台">
+              <SidebarMenuButton asChild tooltip="模型控制台" size="lg" className="h-11 px-3">
                 <Link to="/console/dashboard">
-                  <BookOpenTextIcon />
-                  <span>New API Console</span>
+                  <BrandMark iconClassName="!size-5" textClassName="font-medium" />
                 </Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
