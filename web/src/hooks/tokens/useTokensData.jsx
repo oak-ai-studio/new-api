@@ -57,6 +57,7 @@ export const useTokensData = (openFluentNotification, openCCSwitchModal) => {
   const [editingToken, setEditingToken] = useState({
     id: undefined,
   });
+  const closeEditTimerRef = useRef(null);
 
   // UI state
   const [compactMode, setCompactMode] = useTableCompactMode('tokens');
@@ -84,12 +85,30 @@ export const useTokensData = (openFluentNotification, openCCSwitchModal) => {
   // Close edit modal
   const closeEdit = () => {
     setShowEdit(false);
-    setTimeout(() => {
+    if (closeEditTimerRef.current) {
+      clearTimeout(closeEditTimerRef.current);
+    }
+    closeEditTimerRef.current = setTimeout(() => {
       setEditingToken({
         id: undefined,
       });
+      closeEditTimerRef.current = null;
     }, 500);
   };
+
+  useEffect(() => {
+    if (showEdit && closeEditTimerRef.current) {
+      clearTimeout(closeEditTimerRef.current);
+      closeEditTimerRef.current = null;
+    }
+
+    return () => {
+      if (closeEditTimerRef.current) {
+        clearTimeout(closeEditTimerRef.current);
+        closeEditTimerRef.current = null;
+      }
+    };
+  }, [showEdit]);
 
   // Sync page data from API response
   const syncPageData = (payload) => {

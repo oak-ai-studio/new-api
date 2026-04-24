@@ -121,14 +121,8 @@ export function EditTokenDialog({ open, token, onOpenChange, onUpdated }: EditTo
   }
 
   return (
-    <Dialog
-      open={open}
-      onOpenChange={(nextOpen) => {
-        onOpenChange(nextOpen)
-        if (nextOpen) hydrateFromToken(token)
-      }}
-    >
-      <DialogContent className="sm:max-w-2xl">
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-2xl" onOpenAutoFocus={() => hydrateFromToken(token)}>
         <DialogHeader>
           <DialogTitle>编辑 API Key</DialogTitle>
           <DialogDescription>修改令牌基础信息与限制配置</DialogDescription>
