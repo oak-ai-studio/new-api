@@ -383,6 +383,7 @@ func GetSelf(c *gin.Context) {
 
 	// 计算用户权限信息
 	permissions := calculateUserPermissions(userRole)
+	capabilities := calculateUserCapabilities(userRole)
 
 	// 获取用户设置并提取sidebar_modules
 	userSetting := user.GetSetting()
@@ -414,6 +415,7 @@ func GetSelf(c *gin.Context) {
 		"stripe_customer":   user.StripeCustomer,
 		"sidebar_modules":   userSetting.SidebarModules, // 正确提取sidebar_modules字段
 		"permissions":       permissions,                // 新增权限字段
+		"capabilities":      capabilities,               // 细粒度能力字段
 	}
 
 	c.JSON(http.StatusOK, gin.H{
@@ -450,6 +452,36 @@ func calculateUserPermissions(userRole int) map[string]interface{} {
 	}
 
 	return permissions
+}
+
+func calculateUserCapabilities(userRole int) map[string]bool {
+	capabilities := map[string]bool{
+		"view_console":      true,
+		"manage_channels":   false,
+		"manage_models":     false,
+		"manage_tokens":     true,
+		"manage_users":      false,
+		"manage_permissions": false,
+		"view_logs":         true,
+		"view_admin_logs":   false,
+		"manage_settings":   false,
+	}
+
+	if userRole == common.RoleAdminUser {
+		capabilities["manage_channels"] = true
+		capabilities["manage_models"] = true
+		capabilities["manage_users"] = true
+		capabilities["manage_permissions"] = true
+		capabilities["view_admin_logs"] = true
+	}
+
+	if userRole == common.RoleRootUser {
+		for key := range capabilities {
+			capabilities[key] = true
+		}
+	}
+
+	return capabilities
 }
 
 // 根据用户角色生成默认的边栏配置
