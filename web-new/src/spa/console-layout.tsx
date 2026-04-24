@@ -1,5 +1,6 @@
 "use client"
 
+import { useEffect, useState } from "react"
 import { Link, Outlet, useLocation, useNavigate } from "react-router-dom"
 import {
   BadgeCheckIcon,
@@ -48,6 +49,7 @@ import {
 import { useIsMobile } from "@/hooks/use-mobile"
 import { api } from "@/shared/api/client"
 import { getSessionUser, isAdmin } from "@/shared/auth/session"
+import { formatQuotaDisplay, type QuotaDisplayStatus } from "@/shared/quota-display"
 
 type NavItem = {
   to: string
@@ -95,8 +97,46 @@ export function ConsoleLayout() {
     .filter((group) => group.items.length > 0)
   const isMobile = useIsMobile()
   const displayName = user?.username || "shadcn"
+  const [quotaStatus, setQuotaStatus] = useState<QuotaDisplayStatus | undefined>(undefined)
+  const [liveQuota, setLiveQuota] = useState<number | undefined>(
+    typeof user?.quota === "number" ? user.quota : undefined,
+  )
   const displayBalance =
-    typeof user?.quota === "number" ? `账户余额 ${user.quota.toLocaleString()}` : "账户余额 --"
+    typeof liveQuota === "number"
+      ? `账户余额 ${formatQuotaDisplay(liveQuota, quotaStatus)}`
+      : "账户余额 --"
+
+  useEffect(() => {
+    let cancelled = false
+    Promise.all([api.get("/api/user/self"), api.get("/api/status")])
+      .then(([selfResp, statusResp]) => {
+        if (cancelled) return
+
+        if (statusResp.data?.success && statusResp.data?.data) {
+          setQuotaStatus(statusResp.data.data as QuotaDisplayStatus)
+        }
+
+        if (!selfResp.data?.success) return
+        const latestQuota = Number(selfResp.data?.data?.quota)
+        if (!Number.isFinite(latestQuota)) return
+        setLiveQuota(latestQuota)
+
+        const raw = localStorage.getItem("user")
+        if (!raw) return
+        try {
+          const localUser = JSON.parse(raw)
+          localStorage.setItem("user", JSON.stringify({ ...localUser, quota: latestQuota }))
+        } catch {
+          // ignore parse error
+        }
+      })
+      .catch(() => {
+        // ignore fetch errors
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [])
 
   const handleLogout = async () => {
     try {

@@ -3,11 +3,11 @@
 import { FormEvent, useState } from "react"
 import { useQuery } from "@tanstack/react-query"
 import { Link, useNavigate } from "react-router-dom"
-import { GalleryVerticalEndIcon, ImageIcon } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { api } from "@/shared/api/client"
+import { AuthSidePanel } from "@/spa/auth-side-panel"
 
 type StatusPayload = {
   email_verification?: boolean
@@ -107,14 +107,9 @@ export function RegisterPage() {
 
   return (
     <div className="grid min-h-svh bg-background md:grid-cols-2">
-      <div className="relative flex flex-col border-r bg-card px-8 py-6 md:px-10">
-        <Link to="/" className="flex items-center gap-2 font-medium text-foreground">
-          <div className="flex size-6 items-center justify-center rounded-md bg-primary text-primary-foreground">
-            <GalleryVerticalEndIcon className="size-4" />
-          </div>
-          New API
-        </Link>
+      <AuthSidePanel />
 
+      <div className="relative flex flex-col px-8 py-6 md:px-10">
         <div className="mx-auto flex w-full max-w-sm flex-1 items-center py-6">
           <form className="w-full space-y-6" onSubmit={onSubmit}>
             <div className="space-y-2 text-center">
@@ -246,16 +241,6 @@ export function RegisterPage() {
               </Link>
             </p>
           </form>
-        </div>
-      </div>
-
-      <div className="relative hidden overflow-hidden bg-muted md:block">
-        <div className="absolute inset-0 bg-[radial-gradient(70%_60%_at_50%_55%,rgba(0,0,0,0.06),transparent_75%)]" />
-        <div className="flex h-full items-center justify-center">
-          <div className="relative flex size-24 items-center justify-center rounded-full border border-border bg-background/70">
-            <div className="absolute inset-0 rounded-full border border-dashed border-border" />
-            <ImageIcon className="size-8 text-muted-foreground" />
-          </div>
         </div>
       </div>
     </div>
