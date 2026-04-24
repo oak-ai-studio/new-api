@@ -64,35 +64,33 @@ export function WalletPage() {
   }
 
   return (
-    <div className="space-y-4">
-      <Card>
-        <CardHeader>
-          <CardTitle>钱包</CardTitle>
-          <CardDescription>查看余额、消费情况，并在此进行充值</CardDescription>
-        </CardHeader>
-      </Card>
+    <div className="space-y-4 pt-4 md:pt-6">
+      <div>
+        <h1 className="text-2xl font-semibold">钱包</h1>
+        <p className="text-sm text-muted-foreground">查看余额、消费情况，并在此进行充值</p>
+      </div>
 
       {profileQuery.isError ? (
-        <Card>
+        <Card className="rounded-xl">
           <CardContent className="py-8 text-sm text-red-600">
             {profileQuery.error instanceof Error ? profileQuery.error.message : "钱包数据加载失败"}
           </CardContent>
         </Card>
       ) : (
         <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-          <Card>
+          <Card className="rounded-xl">
             <CardHeader className="pb-2">
               <CardDescription>当前余额</CardDescription>
               <CardTitle className="text-2xl">{formatQuotaDisplay(stats.remain, status)}</CardTitle>
             </CardHeader>
           </Card>
-          <Card>
+          <Card className="rounded-xl">
             <CardHeader className="pb-2">
               <CardDescription>已消费</CardDescription>
               <CardTitle className="text-2xl">{formatQuotaDisplay(stats.used, status)}</CardTitle>
             </CardHeader>
           </Card>
-          <Card>
+          <Card className="rounded-xl">
             <CardHeader className="pb-2">
               <CardDescription>累计金额</CardDescription>
               <CardTitle className="text-2xl">{formatQuotaDisplay(stats.total, status)}</CardTitle>
@@ -101,7 +99,7 @@ export function WalletPage() {
         </div>
       )}
 
-      <Card>
+      <Card className="rounded-xl">
         <CardHeader>
           <CardTitle>充值</CardTitle>
           <CardDescription>支持兑换码充值，也可跳转在线充值页面</CardDescription>

@@ -69,7 +69,7 @@ const navGroups: { label: string; items: NavItem[] }[] = [
     items: [
       { to: "/console/dashboard", label: "仪表盘", icon: LayoutDashboardIcon },
       { to: "/console/pricing", label: "定价查看", icon: CircleDollarSignIcon },
-      { to: "/console/tokens", label: "API Key", icon: KeyRoundIcon },
+      { to: "/console/tokens", label: "API Keys", icon: KeyRoundIcon },
       { to: "/console/logs", label: "日志管理", icon: LogsIcon },
     ],
   },
@@ -192,9 +192,18 @@ export function ConsoleLayout() {
         <SidebarHeader>
           <SidebarMenu>
             <SidebarMenuItem>
-              <SidebarMenuButton asChild tooltip="模型控制台" size="lg" className="h-11 px-3">
+              <SidebarMenuButton
+                asChild
+                tooltip="模型控制台"
+                size="lg"
+                className="h-11 px-3 group-data-[collapsible=icon]:!size-8 group-data-[collapsible=icon]:!p-0"
+              >
                 <Link to="/console/dashboard">
-                  <BrandMark iconClassName="!size-5" textClassName="font-medium" />
+                  <BrandMark
+                    className="w-full min-w-0 items-center group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:gap-0"
+                    iconClassName="!size-5 shrink-0"
+                    textClassName="font-medium group-data-[collapsible=icon]:hidden"
+                  />
                 </Link>
               </SidebarMenuButton>
             </SidebarMenuItem>

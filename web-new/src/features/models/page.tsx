@@ -4,7 +4,7 @@ import { useMemo, useState } from "react"
 import { useQuery, useQueryClient } from "@tanstack/react-query"
 
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import {
@@ -140,149 +140,152 @@ export function ModelsPage() {
   }
 
   return (
-    <Card>
-      <CardHeader>
-        <div className="flex items-center justify-between gap-3">
-          <CardTitle>模型查看与管理</CardTitle>
-          <AddModelDialog
-            onCreated={async () => {
-              await qc.invalidateQueries({ queryKey: ["models"] })
-            }}
-          />
-        </div>
-      </CardHeader>
-      <CardContent className="space-y-3">
-        <div className="grid grid-cols-1 gap-3 md:grid-cols-4">
-          <Input
-            className="h-9 md:col-span-2"
-            placeholder="按模型名过滤"
-            value={keyword}
-            onChange={(e) => setKeyword(e.target.value)}
-          />
-          <Select value={vendorFilter} onValueChange={setVendorFilter}>
-            <SelectTrigger>
-              <SelectValue placeholder="供应商" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">全部供应商</SelectItem>
-              {vendorOptions.map((vendor) => (
-                <SelectItem key={vendor.id} value={String(vendor.id)}>
-                  {vendor.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          <Select value={quotaFilter} onValueChange={setQuotaFilter}>
-            <SelectTrigger>
-              <SelectValue placeholder="计费类型" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">全部计费类型</SelectItem>
-              <SelectItem value="0">按量计费</SelectItem>
-              <SelectItem value="1">按次计费</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-        <div className="overflow-auto rounded-md border border-border">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>图标</TableHead>
-                <TableHead>模型名</TableHead>
-                <TableHead>供应商</TableHead>
-                <TableHead>计费类型</TableHead>
-                <TableHead>操作</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {query.isLoading && (
-                <TableRow>
-                  <TableCell colSpan={5} className="text-center text-slate-500">
-                    加载中...
-                  </TableCell>
-                </TableRow>
-              )}
-              {errorMessage && !query.isLoading && (
-                <TableRow>
-                  <TableCell colSpan={5} className="text-center text-red-600">
-                    {errorMessage}
-                  </TableCell>
-                </TableRow>
-              )}
-              {filteredItems.map((m) => (
-                <TableRow key={m.id}>
-                  <TableCell>{renderModelIcon(m)}</TableCell>
-                  <TableCell>{m.model_name}</TableCell>
-                  <TableCell>
-                    {m.vendor_id ? vendorMap.get(m.vendor_id)?.name || `#${m.vendor_id}` : "-"}
-                  </TableCell>
-                  <TableCell>{renderQuotaType(m)}</TableCell>
-                  <TableCell className="space-x-2 whitespace-nowrap">
-                    <Button
-                      variant="outline"
-                      onClick={async () => {
-                        if (m.readOnly || m.status === 1) {
-                          await handleDisable(m)
-                          return
-                        }
-                        await setModelStatus(m.id, 1)
-                        await qc.invalidateQueries({ queryKey: ["models"] })
-                      }}
-                    >
-                      {m.readOnly || m.status === 1 ? "禁用" : "启用"}
-                    </Button>
-                    <Button
-                      variant="outline"
-                      onClick={() => {
-                        setConfigureModelName(m.model_name)
-                        setConfigureOpen(true)
-                      }}
-                    >
-                      配置
-                    </Button>
-                    <Button
-                      variant="destructive"
-                      onClick={async () => {
-                        await handleDelete(m)
-                      }}
-                    >
-                      删除
-                    </Button>
-                  </TableCell>
-                </TableRow>
-              ))}
-              {!query.isLoading && !errorMessage && filteredItems.length === 0 && (
-                <TableRow>
-                  <TableCell colSpan={5} className="text-center text-slate-500">
-                    暂无模型数据
-                  </TableCell>
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
-        </div>
-        <div className="flex justify-end gap-2">
-          <Button variant="outline" disabled={page <= 1} onClick={() => setPage((p) => p - 1)}>
-            上一页
-          </Button>
-          <Button
-            variant="outline"
-            disabled={displayItems.length < pageSize}
-            onClick={() => setPage((p) => p + 1)}
-          >
-            下一页
-          </Button>
+    <div className="space-y-4 pt-4 md:pt-6">
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <h1 className="text-2xl font-semibold">模型管理</h1>
+          <p className="text-sm text-muted-foreground">管理模型配置、供应商和计费类型</p>
         </div>
         <AddModelDialog
-          hideTrigger
-          open={configureOpen}
-          onOpenChange={setConfigureOpen}
-          initialModelName={configureModelName}
           onCreated={async () => {
             await qc.invalidateQueries({ queryKey: ["models"] })
           }}
         />
-      </CardContent>
-    </Card>
+      </div>
+      <Card className="rounded-xl">
+        <CardContent className="space-y-3 pt-5">
+          <div className="grid grid-cols-1 gap-3 md:grid-cols-4">
+            <Input
+              className="h-9 md:col-span-2"
+              placeholder="按模型名过滤"
+              value={keyword}
+              onChange={(e) => setKeyword(e.target.value)}
+            />
+            <Select value={vendorFilter} onValueChange={setVendorFilter}>
+              <SelectTrigger>
+                <SelectValue placeholder="供应商" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">全部供应商</SelectItem>
+                {vendorOptions.map((vendor) => (
+                  <SelectItem key={vendor.id} value={String(vendor.id)}>
+                    {vendor.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Select value={quotaFilter} onValueChange={setQuotaFilter}>
+              <SelectTrigger>
+                <SelectValue placeholder="计费类型" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">全部计费类型</SelectItem>
+                <SelectItem value="0">按量计费</SelectItem>
+                <SelectItem value="1">按次计费</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="overflow-auto rounded-md border border-border">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>图标</TableHead>
+                  <TableHead>模型名</TableHead>
+                  <TableHead>供应商</TableHead>
+                  <TableHead>计费类型</TableHead>
+                  <TableHead>操作</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {query.isLoading && (
+                  <TableRow>
+                    <TableCell colSpan={5} className="text-center text-slate-500">
+                      加载中...
+                    </TableCell>
+                  </TableRow>
+                )}
+                {errorMessage && !query.isLoading && (
+                  <TableRow>
+                    <TableCell colSpan={5} className="text-center text-red-600">
+                      {errorMessage}
+                    </TableCell>
+                  </TableRow>
+                )}
+                {filteredItems.map((m) => (
+                  <TableRow key={m.id}>
+                    <TableCell>{renderModelIcon(m)}</TableCell>
+                    <TableCell>{m.model_name}</TableCell>
+                    <TableCell>
+                      {m.vendor_id ? vendorMap.get(m.vendor_id)?.name || `#${m.vendor_id}` : "-"}
+                    </TableCell>
+                    <TableCell>{renderQuotaType(m)}</TableCell>
+                    <TableCell className="space-x-2 whitespace-nowrap">
+                      <Button
+                        variant="outline"
+                        onClick={async () => {
+                          if (m.readOnly || m.status === 1) {
+                            await handleDisable(m)
+                            return
+                          }
+                          await setModelStatus(m.id, 1)
+                          await qc.invalidateQueries({ queryKey: ["models"] })
+                        }}
+                      >
+                        {m.readOnly || m.status === 1 ? "禁用" : "启用"}
+                      </Button>
+                      <Button
+                        variant="outline"
+                        onClick={() => {
+                          setConfigureModelName(m.model_name)
+                          setConfigureOpen(true)
+                        }}
+                      >
+                        配置
+                      </Button>
+                      <Button
+                        variant="destructive"
+                        onClick={async () => {
+                          await handleDelete(m)
+                        }}
+                      >
+                        删除
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
+                {!query.isLoading && !errorMessage && filteredItems.length === 0 && (
+                  <TableRow>
+                    <TableCell colSpan={5} className="text-center text-slate-500">
+                      暂无模型数据
+                    </TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+          </div>
+          <div className="flex justify-end gap-2">
+            <Button variant="outline" disabled={page <= 1} onClick={() => setPage((p) => p - 1)}>
+              上一页
+            </Button>
+            <Button
+              variant="outline"
+              disabled={displayItems.length < pageSize}
+              onClick={() => setPage((p) => p + 1)}
+            >
+              下一页
+            </Button>
+          </div>
+          <AddModelDialog
+            hideTrigger
+            open={configureOpen}
+            onOpenChange={setConfigureOpen}
+            initialModelName={configureModelName}
+            onCreated={async () => {
+              await qc.invalidateQueries({ queryKey: ["models"] })
+            }}
+          />
+        </CardContent>
+      </Card>
+    </div>
   )
 }

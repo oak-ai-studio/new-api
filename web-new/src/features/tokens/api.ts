@@ -7,7 +7,15 @@ export type TokenItem = {
   key: string
   status: number
   remain_quota: number
+  used_quota?: number
+  allow_ips?: string | null
+  model_limits_enabled?: boolean
+  model_limits?: string
+  cross_group_retry?: boolean
+  created_time?: number
+  accessed_time?: number
   expired_time: number
+  unlimited_quota?: boolean
   group: string
 }
 
@@ -33,8 +41,29 @@ export async function updateToken(payload: {
   expired_time: number
   unlimited_quota: boolean
   group: string
+  allow_ips?: string | null
+  model_limits_enabled?: boolean
+  model_limits?: string
+  cross_group_retry?: boolean
 }) {
   return unwrap(api.put("/api/token/", payload))
+}
+
+export async function setTokenStatus(payload: { id: number; status: number }) {
+  return unwrap(api.put("/api/token/?status_only=true", payload))
+}
+
+export type UserGroupMeta = {
+  ratio: number | string
+  desc?: string
+}
+
+export async function getUserGroups() {
+  return unwrap<Record<string, UserGroupMeta>>(api.get("/api/user/self/groups"))
+}
+
+export async function getSystemStatus() {
+  return unwrap<{ quota_per_unit?: number }>(api.get("/api/status"))
 }
 
 export async function deleteToken(id: number) {
