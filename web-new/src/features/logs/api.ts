@@ -12,6 +12,26 @@ export type LogItem = {
 }
 
 export async function listLogs(page: number, pageSize: number, admin: boolean) {
-  const path = admin ? "/api/log" : "/api/log/self"
-  return unwrap<Paged<LogItem>>(api.get(`${path}?p=${page}&page_size=${pageSize}`))
+  const candidates = admin
+    ? ["/api/log", "/api/log/"]
+    : ["/api/log/self", "/api/log/self/"]
+  let lastError: unknown
+
+  for (const path of candidates) {
+    try {
+      return await unwrap<Paged<LogItem>>(api.get(`${path}?p=${page}&page_size=${pageSize}`))
+    } catch (error) {
+      lastError = error
+      // For non-network errors (auth, permission, business validation),
+      // return immediately so users see the actual backend message.
+      if (!(error instanceof Error) || !error.message.toLowerCase().includes("network")) {
+        throw error
+      }
+    }
+  }
+
+  if (lastError instanceof Error) {
+    throw lastError
+  }
+  throw new Error("日志接口请求失败")
 }

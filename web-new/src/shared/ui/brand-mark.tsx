@@ -25,7 +25,7 @@ export function BrandMark({ className, textClassName, iconClassName, tone = "lig
       />
       <span
         className={cn(
-          "text-[17px] leading-none font-bold tracking-tight",
+          "text-[17px] leading-none font-bold tracking-tight whitespace-nowrap",
           darkTone ? "text-white" : "text-foreground",
           textClassName,
         )}

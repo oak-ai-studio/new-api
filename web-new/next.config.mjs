@@ -24,6 +24,14 @@ const nextConfig = {
         destination: `${backendBaseUrl}/api/log/`,
       },
       {
+        source: "/api/vendors",
+        destination: `${backendBaseUrl}/api/vendors/`,
+      },
+      {
+        source: "/api/models",
+        destination: `${backendBaseUrl}/api/models/`,
+      },
+      {
         source: "/api/:path*",
         destination: `${backendBaseUrl}/api/:path*`,
       },

@@ -23,8 +23,12 @@ export function PermissionsPage() {
   }, [query.data])
 
   return (
-    <div className="space-y-4">
-      <Card>
+    <div className="space-y-4 pt-4 md:pt-6">
+      <div>
+        <h1 className="text-2xl font-semibold">权限管理</h1>
+        <p className="text-sm text-muted-foreground">查看当前角色能力并维护侧边栏模块可见性</p>
+      </div>
+      <Card className="rounded-xl">
         <CardHeader>
           <CardTitle>权限信息（角色与能力）</CardTitle>
         </CardHeader>
@@ -42,7 +46,7 @@ export function PermissionsPage() {
           </pre>
         </CardContent>
       </Card>
-      <Card>
+      <Card className="rounded-xl">
         <CardHeader>
           <CardTitle>模块可见性（sidebar_modules）</CardTitle>
         </CardHeader>

@@ -1,6 +1,7 @@
 "use client"
 
 import { useMemo, useState } from "react"
+import { PlusIcon } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import {
@@ -96,7 +97,13 @@ export function AddChannelDialog({ onCreated }: AddChannelDialogProps) {
       }}
     >
       <DialogTrigger asChild>
-        <Button>添加渠道</Button>
+        <Button
+          variant="default"
+          className="h-9 border border-transparent bg-zinc-900 text-white hover:bg-zinc-800 dark:bg-white dark:text-zinc-900 dark:hover:bg-zinc-100"
+        >
+          <PlusIcon className="size-4" />
+          添加渠道
+        </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-2xl">
         <DialogHeader>
